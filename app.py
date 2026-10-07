@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import tempfile
+from typing import Optional
 from urllib.parse import urlparse
 
 from flask import Flask, after_this_request, jsonify, render_template, request, send_file
@@ -36,6 +37,41 @@ def safe_name(title: str) -> str:
     return re.sub(r'[\\/:*?"<>|]+', "_", title).strip()[:120] or "video"
 
 
+def youtube_error_message(exc: Exception) -> str:
+    msg = re.sub(r"\x1b\[[0-9;]*m", "", str(exc)).replace("ERROR: ", "")
+    lower = msg.lower()
+    if "sign in to confirm you’re not a bot" in lower or "sign in to confirm you're not a bot" in lower:
+        return (
+            "This YouTube video is blocking anonymous access. "
+            "Use a browser cookie export or set YTDLP_COOKIES_PATH in production. "
+            "Example: YTDLP_COOKIES_PATH=/path/to/yt_cookies.txt"
+        )
+    return msg
+
+
+def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[str] = None) -> dict:
+    opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "noplaylist": True,
+        "extractor_args": YOUTUBE_EXTRACTOR_ARGS,
+    }
+    if skip_download:
+        opts["skip_download"] = True
+    if output_dir:
+        opts["outtmpl"] = os.path.join(output_dir, "%(title).100s.%(ext)s")
+
+    cookies_path = os.getenv("YTDLP_COOKIES_PATH")
+    if cookies_path:
+        opts["cookies"] = cookies_path
+
+    cookies_browser = os.getenv("YTDLP_COOKIES_FROM_BROWSER")
+    if cookies_browser:
+        opts["cookiesfrombrowser"] = [cookies_browser]
+
+    return opts
+
+
 @app.get("/")
 def index():
     return render_template("index.html", has_ffmpeg=HAS_FFMPEG)
@@ -46,18 +82,12 @@ def info():
     url = (request.get_json(silent=True) or {}).get("url", "").strip()
     if not valid_youtube_url(url):
         return jsonify(error="Enter a full YouTube link, like https://www.youtube.com/watch?v=..."), 400
-    opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "noplaylist": True,
-        "skip_download": True,
-        "extractor_args": YOUTUBE_EXTRACTOR_ARGS,
-    }
+    opts = build_yt_dlp_options(skip_download=True)
     try:
         with yt_dlp.YoutubeDL(opts) as ydl:
             data = ydl.extract_info(url, download=False)
     except DownloadError as e:
-        msg = re.sub(r"\x1b\[[0-9;]*m", "", str(e)).replace("ERROR: ", "")
+        msg = youtube_error_message(e)
         return jsonify(error=f"Couldn't read that video. {msg}"), 422
     except Exception as e:  # network errors etc.
         return jsonify(error=f"Something went wrong: {e}"), 500
@@ -86,13 +116,7 @@ def download():
     h = int(height)
 
     tmp = tempfile.mkdtemp(prefix="ytgrab_")
-    opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "noplaylist": True,
-        "outtmpl": os.path.join(tmp, "%(title).100s.%(ext)s"),
-        "extractor_args": YOUTUBE_EXTRACTOR_ARGS,
-    }
+    opts = build_yt_dlp_options(output_dir=tmp)
     if kind == "audio":
         if HAS_FFMPEG:
             opts["format"] = "bestaudio/best"
