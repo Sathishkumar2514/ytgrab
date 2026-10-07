@@ -110,12 +110,11 @@ def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[st
         with open(cookies_path, "w", encoding="utf-8") as f:
             f.write(cookies_content)
 
-    if cookies_path and cookie_file_has_data(cookies_path):
-        opts["cookies"] = cookies_path
-
     cookies_browser = os.getenv("YTDLP_COOKIES_FROM_BROWSER")
     if cookies_browser:
         opts["cookiesfrombrowser"] = [cookies_browser]
+    elif cookies_path and cookie_file_has_data(cookies_path):
+        opts["cookies"] = cookies_path
 
     return opts
 

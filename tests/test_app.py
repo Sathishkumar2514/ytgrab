@@ -25,6 +25,19 @@ def test_build_yt_dlp_options_skips_placeholder_cookie_file(monkeypatch, tmp_pat
     assert "cookies" not in options
 
 
+def test_build_yt_dlp_options_prefers_browser_cookies(monkeypatch, tmp_path):
+    cookie_path = tmp_path / "yt_cookies.txt"
+    cookie_path.write_text("# Netscape HTTP Cookie File\n# Data present\n.youtube.com\tTRUE\t/\tTRUE\t123456\tSID\tabc\n", encoding="utf-8")
+    monkeypatch.setenv("YTDLP_COOKIES_PATH", str(cookie_path))
+    monkeypatch.setenv("YTDLP_COOKIES_FROM_BROWSER", "chrome")
+    monkeypatch.delenv("YTDLP_COOKIES_CONTENT", raising=False)
+
+    options = build_yt_dlp_options(skip_download=True)
+
+    assert options["cookiesfrombrowser"] == ["chrome"]
+    assert "cookies" not in options
+
+
 def test_build_yt_dlp_options_uses_configured_youtube_client(monkeypatch):
     monkeypatch.setenv("YTDLP_PLAYER_CLIENTS", "mweb")
     monkeypatch.delenv("YTDLP_COOKIES_PATH", raising=False)
