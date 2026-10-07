@@ -62,6 +62,11 @@ def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[st
         opts["outtmpl"] = os.path.join(output_dir, "%(title).100s.%(ext)s")
 
     cookies_path = os.getenv("YTDLP_COOKIES_PATH")
+    cookies_content = os.getenv("YTDLP_COOKIES_CONTENT")
+    if cookies_content:
+        cookies_path = "/tmp/yt_cookies.txt"
+        with open(cookies_path, "w", encoding="utf-8") as f:
+            f.write(cookies_content)
     if cookies_path:
         opts["cookies"] = cookies_path
 

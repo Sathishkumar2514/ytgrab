@@ -6,6 +6,7 @@ __pycache__/
 venv/
 .env
 .env.*
+.cookies/
 .pytest_cache/
 .DS_Store
 
