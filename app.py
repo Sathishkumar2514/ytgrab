@@ -80,6 +80,10 @@ def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[st
     if output_dir:
         opts["outtmpl"] = os.path.join(output_dir, "%(title).100s.%(ext)s")
 
+    user_agent = os.getenv("YTDLP_USER_AGENT")
+    if user_agent:
+        opts["http_headers"] = {"User-Agent": user_agent}
+
     cookies_path = os.getenv("YTDLP_COOKIES_PATH")
     cookies_content = os.getenv("YTDLP_COOKIES_CONTENT")
     if cookies_content:
