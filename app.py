@@ -37,6 +37,25 @@ def safe_name(title: str) -> str:
     return re.sub(r'[\\/:*?"<>|]+', "_", title).strip()[:120] or "video"
 
 
+def cookie_file_has_data(path: str) -> bool:
+    if not path or not os.path.exists(path):
+        return False
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+    except OSError:
+        return False
+
+    stripped = content.strip()
+    if not stripped:
+        return False
+
+    lower = stripped.lower()
+    if "intentionally empty" in lower or "replace this file with a real exported" in lower:
+        return False
+    return True
+
+
 def youtube_error_message(exc: Exception) -> str:
     msg = re.sub(r"\x1b\[[0-9;]*m", "", str(exc)).replace("ERROR: ", "")
     lower = msg.lower()
@@ -67,7 +86,8 @@ def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[st
         cookies_path = "/tmp/yt_cookies.txt"
         with open(cookies_path, "w", encoding="utf-8") as f:
             f.write(cookies_content)
-    if cookies_path:
+
+    if cookies_path and cookie_file_has_data(cookies_path):
         opts["cookies"] = cookies_path
 
     cookies_browser = os.getenv("YTDLP_COOKIES_FROM_BROWSER")

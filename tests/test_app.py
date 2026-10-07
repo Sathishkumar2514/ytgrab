@@ -1,6 +1,8 @@
 import json
 
-from app import app, youtube_error_message
+import pytest
+
+from app import app, build_yt_dlp_options, youtube_error_message
 
 
 def test_youtube_bot_error_has_cookie_guidance():
@@ -9,6 +11,18 @@ def test_youtube_bot_error_has_cookie_guidance():
     )
     assert "cookies" in message.lower()
     assert "browser" in message.lower()
+
+
+def test_build_yt_dlp_options_skips_placeholder_cookie_file(monkeypatch, tmp_path):
+    cookie_path = tmp_path / "yt_cookies.txt"
+    cookie_path.write_text("# Netscape HTTP Cookie File\n# This file is intentionally empty for local setup.\n", encoding="utf-8")
+    monkeypatch.setenv("YTDLP_COOKIES_PATH", str(cookie_path))
+    monkeypatch.delenv("YTDLP_COOKIES_CONTENT", raising=False)
+    monkeypatch.delenv("YTDLP_COOKIES_FROM_BROWSER", raising=False)
+
+    options = build_yt_dlp_options(skip_download=True)
+
+    assert "cookies" not in options
 
 
 def test_info_endpoint_accepts_real_youtube_url():
