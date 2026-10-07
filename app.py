@@ -2,12 +2,16 @@ import os
 import re
 import shutil
 import tempfile
+from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
 
+from dotenv import load_dotenv
 from flask import Flask, after_this_request, jsonify, render_template, request, send_file
 import yt_dlp
 from yt_dlp.utils import DownloadError
+
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 
 def create_app() -> Flask:
