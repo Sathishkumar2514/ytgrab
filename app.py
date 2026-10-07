@@ -27,6 +27,7 @@ HAS_FFMPEG = shutil.which("ffmpeg") is not None
 ALLOWED_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"}
 HEIGHTS = [2160, 1440, 1080, 720, 480, 360]
 DEFAULT_YOUTUBE_PLAYER_CLIENTS = ["android", "web"]
+DEFAULT_BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 
 
 def build_youtube_extractor_args() -> dict:
@@ -81,8 +82,9 @@ def youtube_error_message(exc: Exception) -> str:
     if "sign in to confirm you’re not a bot" in lower or "sign in to confirm you're not a bot" in lower:
         return (
             "This YouTube video is blocking anonymous access. "
-            "Use a browser cookie export or set YTDLP_COOKIES_PATH in production. "
-            "Example: YTDLP_COOKIES_PATH=/path/to/yt_cookies.txt"
+            "Use a fresh private/incognito YouTube session, export cookies from that browser, and set "
+            "YTDLP_COOKIES_FROM_BROWSER=chrome or YTDLP_COOKIES_PATH=/path/to/yt_cookies.txt. "
+            "A browser-like User-Agent is also required."
         )
     return msg
 
@@ -99,9 +101,8 @@ def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[st
     if output_dir:
         opts["outtmpl"] = os.path.join(output_dir, "%(title).100s.%(ext)s")
 
-    user_agent = os.getenv("YTDLP_USER_AGENT")
-    if user_agent:
-        opts["http_headers"] = {"User-Agent": user_agent}
+    user_agent = os.getenv("YTDLP_USER_AGENT") or DEFAULT_BROWSER_UA
+    opts["http_headers"] = {"User-Agent": user_agent}
 
     cookies_path = os.getenv("YTDLP_COOKIES_PATH")
     cookies_content = os.getenv("YTDLP_COOKIES_CONTENT")
