@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FreeVideoDownloader</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000"
+     crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07111f;
+  --bg-2:#111a2e;
+  --panel:rgba(15, 23, 42, 0.7);
+  --panel-strong:rgba(15, 23, 42, 0.92);
+  --ink:#ecf4ff;
+  --muted:#a6b5d0;
+  --line:rgba(148, 163, 184, 0.22);
+  --accent:#6ee7ff;
+  --accent-2:#8b5cf6;
+  --accent-3:#22c55e;
+  --soft:#0f172a;
+  --shadow:rgba(17, 24, 39, 0.45);
+  --err:#ff7b7b;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:32px 18px;
+  font:16px/1.5 "Instrument Sans",system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(110, 231, 255, 0.16), transparent 30%),
+    radial-gradient(circle at top right, rgba(139, 92, 246, 0.18), transparent 35%),
+    linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 100%);
+}
+main{
+  width:min(100%, 760px);
+  position:relative;
+  z-index:1;
+}
+main::before{
+  content:"";
+  position:absolute;
+  inset:-40px -28px auto auto;
+  width:220px;
+  height:220px;
+  background:radial-gradient(circle, rgba(110,231,255,.22), transparent 65%);
+  filter:blur(18px);
+  pointer-events:none;
+}
+.hero{
+  background:rgba(15, 23, 42, 0.56);
+  border:1px solid var(--line);
+  border-radius:28px;
+  backdrop-filter:blur(18px);
+  box-shadow:0 24px 80px var(--shadow);
+  padding:28px 24px 22px;
+}
+.brand-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(110,231,255,.12);
+  color:var(--accent);
+  border:1px solid rgba(110,231,255,.18);
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:.74rem;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.badge::before{
+  content:"";
+  display:block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow:0 0 10px rgba(110,231,255,.8);
+}
+h1{
+  margin:0;
+  font:800 clamp(2.3rem,6vw,4rem)/1 "Bricolage Grotesque",sans-serif;
+  letter-spacing:-.05em;
+  background:linear-gradient(90deg, #eff6ff, var(--accent), #d8b4fe);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.sub{
+  margin:10px 0 0;
+  max-width:56ch;
+  color:var(--muted);
+  font-size:1.02rem;
+}
+.row{display:flex;gap:12px;margin-top:22px}
+input[type=url]{
+  flex:1;
+  min-width:0;
+  padding:16px 18px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(15,23,42,0.72);
+  color:var(--ink);
+  font:inherit;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);
+}
+input[type=url]::placeholder{color:#7f8aa5}
+button{
+  font:700 1rem "Instrument Sans",sans-serif;
+  padding:15px 20px;
+  border-radius:14px;
+  border:0;
+  cursor:pointer;
+  color:#08131f;
+  background:linear-gradient(135deg, var(--accent) 0%, #7dd3fc 28%, #c4b5fd 100%);
+  box-shadow:0 12px 28px rgba(110,231,255,.28);
+  transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+}
+button:hover{transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+button:disabled{opacity:.6;cursor:wait;transform:none}
+#check{min-width:150px}
+#dl{
+  background:linear-gradient(135deg, var(--accent-3), #86efac);
+  color:#04170a;
+}
+:focus-visible{outline:3px solid rgba(110,231,255,.7);outline-offset:2px}
+#err{margin:16px 0 0;min-height:1.5em;color:var(--err);font-weight:600}
+#card{
+  display:none;
+  margin-top:24px;
+  background:rgba(15, 23, 42, 0.66);
+  border:1px solid var(--line);
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 18px 40px rgba(2,6,23,.35);
+}
+#card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#0b1324}
+.body{padding:18px 20px 20px}
+.title{margin:0;font:700 1.22rem/1.35 "Bricolage Grotesque",sans-serif}
+.meta{margin:.35rem 0 1rem;color:var(--muted);font-size:.9rem}
+.choices{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select{
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(15,23,42,0.9);
+  color:var(--ink);
+  font:inherit;
+}
+.note{margin-top:26px;color:var(--muted);font-size:.9rem;line-height:1.7}
+.warn{margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);color:var(--muted);font-size:.86rem}
+.revenue{margin-top:22px;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(15,23,42,.55);display:grid;gap:14px}
+.revenue-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.revenue-label{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.revenue-cta{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:999px;border:1px solid rgba(110,231,255,.22);background:rgba(110,231,255,.08);color:var(--ink);text-decoration:none;font-weight:700}
+.ad-slot{display:flex;align-items:center;justify-content:center;min-height:120px;border:1px dashed rgba(148,163,184,.4);border-radius:14px;background:linear-gradient(135deg, rgba(110,231,255,.08), rgba(139,92,246,.08));color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+@media (max-width: 560px){
+  .hero{padding:22px 18px 18px}
+  .brand-row{align-items:flex-start}
+  .row{flex-direction:column}
+  #check,#dl{width:100%}
+  .choices{flex-direction:column;align-items:stretch}
+  select{width:100%}
+  .revenue-header{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="brand-row">
+      <span class="badge">Local Media</span>
+    </div>
+    <h1>FreeVideoDownloader</h1>
+    <p class="sub">Paste a YouTube link, choose the format, and save your video or audio locally in seconds.</p>
+
+    <div class="row">
+      <input id="url" type="url" placeholder="https://www.youtube.com/watch?v=..." aria-label="YouTube link" autocomplete="off">
+      <button id="check">Find video</button>
+    </div>
+    <p id="err" role="alert"></p>
+
+    <section id="card" aria-live="polite">
+      <img id="thumb" alt="Video thumbnail">
+      <div class="body">
+        <p class="title" id="title"></p>
+        <p class="meta" id="meta"></p>
+        <div class="choices">
+          <select id="kind" aria-label="Format">
+            <option value="video">Video (MP4)</option>
+            <option value="audio">Audio only</option>
+          </select>
+          <select id="height" aria-label="Quality"></select>
+          <button id="dl">Download</button>
+        </div>
+        {% if not has_ffmpeg %}
+        <p class="warn">ffmpeg isn't installed, so video is limited to pre-merged files (usually up to 720p) and audio saves as M4A. Install ffmpeg for higher quality and MP3.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <p class="note">Only download videos you made, have permission to save, or that are licensed for reuse. Downloading other videos may break YouTube's Terms of Service or copyright law.</p>
+
+    <div class="revenue" aria-label="Revenue and support section">
+      <div class="revenue-header">
+        <span class="revenue-label">Support</span>
+        <a class="revenue-cta" href="https://buymeacoffee.com" target="_blank" rel="noreferrer">Buy me a coffee</a>
+      </div>
+      <div class="ad-slot">
+        <ins class="adsbygoogle"
+             style="display:block; width:100%; min-height:120px;"
+             data-ad-client="ca-pub-0000000000000000"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const err = m => $("err").textContent = m || "";
+const fmt = s => { if(!s) return ""; const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;
+  return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0"); };
+
+async function check(){
+  err(""); $("card").style.display="none";
+  const url = $("url").value.trim();
+  if(!url){ err("Paste a YouTube link first."); return; }
+  $("check").disabled = true; $("check").textContent = "Looking…";
+  try{
+    const r = await fetch("/api/info",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});
+    const d = await r.json();
+    if(!r.ok){ err(d.error || "Request failed."); return; }
+    $("thumb").src = d.thumbnail || "";
+    $("title").textContent = d.title;
+    $("meta").textContent = [d.channel, fmt(d.duration)].filter(Boolean).join(" · ");
+    $("height").innerHTML = d.qualities.map(h=>`<option value="${h}" ${h===720?"selected":""}>${h}p</option>`).join("");
+    if(!d.qualities.includes(720)) $("height").selectedIndex = 0;
+    $("card").style.display = "block";
+    toggle();
+  }catch(e){ err("Couldn't reach the server. Is app.py still running?"); }
+  finally{ $("check").disabled=false; $("check").textContent="Find video"; }
+}
+function toggle(){ $("height").style.display = $("kind").value==="audio" ? "none" : ""; }
+
+async function download(){
+  err(""); const btn=$("dl"); btn.disabled=true; btn.textContent="Preparing…";
+  const q = new URLSearchParams({url:$("url").value.trim(), kind:$("kind").value, height:$("height").value||"720"});
+  try{
+    const r = await fetch("/api/download?"+q);
+    if(!r.ok){ const d = await r.json().catch(()=>({})); err(d.error||"Download failed."); return; }
+    const cd = r.headers.get("Content-Disposition")||"";
+    const m = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
+    const name = m ? decodeURIComponent(m[1]) : "download";
+    const blob = await r.blob();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),10000);
+  }catch(e){ err("Download failed. Check your connection and try again."); }
+  finally{ btn.disabled=false; btn.textContent="Download"; }
+}
+$("check").onclick = check;
+$("url").addEventListener("keydown", e => { if(e.key==="Enter") check(); });
+$("kind").onchange = toggle;
+$("dl").onclick = download;
+</script>
+</body>
+</html>
