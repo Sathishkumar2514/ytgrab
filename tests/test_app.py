@@ -25,6 +25,17 @@ def test_build_yt_dlp_options_skips_placeholder_cookie_file(monkeypatch, tmp_pat
     assert "cookies" not in options
 
 
+def test_build_yt_dlp_options_uses_configured_youtube_client(monkeypatch):
+    monkeypatch.setenv("YTDLP_PLAYER_CLIENTS", "mweb")
+    monkeypatch.delenv("YTDLP_COOKIES_PATH", raising=False)
+    monkeypatch.delenv("YTDLP_COOKIES_CONTENT", raising=False)
+    monkeypatch.delenv("YTDLP_COOKIES_FROM_BROWSER", raising=False)
+
+    options = build_yt_dlp_options(skip_download=True)
+
+    assert options["extractor_args"]["youtube"]["player_client"] == ["mweb"]
+
+
 def test_info_endpoint_accepts_real_youtube_url():
     client = app.test_client()
     response = client.post(

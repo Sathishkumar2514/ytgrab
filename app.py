@@ -22,7 +22,22 @@ app = create_app()
 HAS_FFMPEG = shutil.which("ffmpeg") is not None
 ALLOWED_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"}
 HEIGHTS = [2160, 1440, 1080, 720, 480, 360]
-YOUTUBE_EXTRACTOR_ARGS = {"youtube": {"player_client": ["android", "web"]}}
+DEFAULT_YOUTUBE_PLAYER_CLIENTS = ["android", "web"]
+
+
+def build_youtube_extractor_args() -> dict:
+    configured = os.getenv("YTDLP_PLAYER_CLIENTS", "").strip()
+    clients = [part.strip() for part in configured.split(",") if part.strip()] if configured else DEFAULT_YOUTUBE_PLAYER_CLIENTS
+    args = {"youtube": {"player_client": clients}}
+
+    visitor_data = os.getenv("YTDLP_VISITOR_DATA", "").strip()
+    if visitor_data:
+        args["youtube"]["visitor_data"] = visitor_data
+
+    return args
+
+
+YOUTUBE_EXTRACTOR_ARGS = build_youtube_extractor_args()
 
 
 def valid_youtube_url(url: str) -> bool:
@@ -73,7 +88,7 @@ def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[st
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
-        "extractor_args": YOUTUBE_EXTRACTOR_ARGS,
+        "extractor_args": build_youtube_extractor_args(),
     }
     if skip_download:
         opts["skip_download"] = True
