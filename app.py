@@ -89,6 +89,25 @@ def youtube_error_message(exc: Exception) -> str:
     return msg
 
 
+def resolve_cookie_config() -> dict:
+    cookies_content = os.getenv("YTDLP_COOKIES_CONTENT", "").strip()
+    if cookies_content:
+        cookies_path = "/tmp/yt_cookies.txt"
+        os.makedirs(os.path.dirname(cookies_path), exist_ok=True)
+        with open(cookies_path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(cookies_content)
+        return {"cookies": cookies_path}
+
+    cookies_browser = os.getenv("YTDLP_COOKIES_FROM_BROWSER", "").strip()
+    if cookies_browser:
+        return {"cookiesfrombrowser": [cookies_browser]}
+
+    cookies_path = os.getenv("YTDLP_COOKIES_PATH", "").strip()
+    if cookies_path and cookie_file_has_data(cookies_path):
+        return {"cookies": cookies_path}
+    return {}
+
+
 def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[str] = None) -> dict:
     opts = {
         "quiet": True,
@@ -104,19 +123,8 @@ def build_yt_dlp_options(*, skip_download: bool = False, output_dir: Optional[st
     user_agent = os.getenv("YTDLP_USER_AGENT") or DEFAULT_BROWSER_UA
     opts["http_headers"] = {"User-Agent": user_agent}
 
-    cookies_path = os.getenv("YTDLP_COOKIES_PATH")
-    cookies_content = os.getenv("YTDLP_COOKIES_CONTENT")
-    if cookies_content:
-        cookies_path = "/tmp/yt_cookies.txt"
-        with open(cookies_path, "w", encoding="utf-8") as f:
-            f.write(cookies_content)
-
-    cookies_browser = os.getenv("YTDLP_COOKIES_FROM_BROWSER")
-    if cookies_browser:
-        opts["cookiesfrombrowser"] = [cookies_browser]
-    elif cookies_path and cookie_file_has_data(cookies_path):
-        opts["cookies"] = cookies_path
-
+    cookie_config = resolve_cookie_config()
+    opts.update(cookie_config)
     return opts
 
 
